@@ -1,4 +1,4 @@
-import { Building, Home } from "lucide-react";
+import { Building, Home, Box } from "lucide-react";
 import { type NavItem } from "@/types/nav-item";
 
 export const NavItems: NavItem[] = [
@@ -25,4 +25,9 @@ export const NavItems: NavItem[] = [
       },
     ],
   },
+  {
+    title: "Orders",
+    icon: Box,
+    href: "/dashboard/orders",
+  }
 ];
