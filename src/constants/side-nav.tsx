@@ -1,4 +1,4 @@
-import { Building, Home } from "lucide-react";
+import { Building, Home, ShoppingBasket } from "lucide-react";
 import { type NavItem } from "@/types/nav-item";
 
 export const NavItems: NavItem[] = [
@@ -22,6 +22,24 @@ export const NavItems: NavItem[] = [
         title: "Create New Vendor",
         color: "text-red-500",
         href: "/dashboard/vendors/create",
+      },
+    ],
+  },
+  {
+    title: "Products",
+    icon: ShoppingBasket,
+    href: "/products",
+    isChidren: true,
+    children: [
+      {
+        title: "View All Products",
+        color: "text-red-500",
+        href: "/dashboard/products",
+      },
+      {
+        title: "Create New Products",
+        color: "text-red-500",
+        href: "/dashboard/products/create",
       },
     ],
   },
