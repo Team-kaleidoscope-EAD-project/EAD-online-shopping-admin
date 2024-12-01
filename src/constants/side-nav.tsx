@@ -1,4 +1,6 @@
+
 import { Building, Home, ShoppingBasket } from "lucide-react";
+
 import { type NavItem } from "@/types/nav-item";
 
 export const NavItems: NavItem[] = [
@@ -26,6 +28,7 @@ export const NavItems: NavItem[] = [
     ],
   },
   {
+
     title: "Products",
     icon: ShoppingBasket,
     href: "/products",
@@ -43,4 +46,10 @@ export const NavItems: NavItem[] = [
       },
     ],
   },
+  {
+    title: "Orders",
+    icon: Box,
+    href: "/dashboard/orders",
+  }
+
 ];
