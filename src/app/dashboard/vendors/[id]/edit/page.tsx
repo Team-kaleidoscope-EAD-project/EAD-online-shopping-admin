@@ -33,7 +33,7 @@ const formSchema = z.object({
 type formValues = z.infer<typeof formSchema>;
 
 const formValues: Partial<formValues> = {
-  name: "Foo Bar",
+  name: "Foo Baf",
   organization: "John Deer Inc.",
   email: "john@deer.com",
   status: "active",
