@@ -5,6 +5,7 @@ import { ArrowUpDown, Eye, Pencil, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Product } from "@/types/product";
+import axiosInstance from "@/lib/api/axiosInstance";
 
 export const columnsProduct: ColumnDef<Product>[] = [
   {
@@ -38,13 +39,23 @@ export const columnsProduct: ColumnDef<Product>[] = [
   },
   {
     accessorKey: "price",
-    header: () => <div className="text-left">Prices</div>,
+    header: () => <div className="text-left">Prices(Rs.)</div>,
   },
   {
     id: "actions",
     header: () => <div className="text-right">Actions</div>,
     cell: ({ row }: { row: { original: Product } }) => {
       const product = row.original;
+
+      const handleDelete = async () => {
+        try {
+          const res = await axiosInstance.delete("/product/" + product.id);
+
+          window.location.reload();
+        } catch (error) {
+          console.log("Error deleting", error);
+        }
+      };
 
       return (
         <div className="flex gap-2 justify-end">
@@ -58,7 +69,7 @@ export const columnsProduct: ColumnDef<Product>[] = [
               <Pencil size={18} />
             </Button>
           </Link>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={handleDelete}>
             <Trash size={18} />
           </Button>
         </div>

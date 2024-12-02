@@ -62,25 +62,25 @@ export function DataTable<TData, TValue>({
 
   return (
     <>
-        <Card className="mb-5">
-          <CardHeader>
-            <CardTitle>Filters</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="column-1 w-1/3">
-              <Label htmlFor="productId">Product ID</Label>
-              <Input
-                id="productId"
-                value={
-                  (table.getColumn("productId")?.getFilterValue() as string) ?? ""
-                }
-                onChange={(event) =>
-                  table.getColumn("productId")?.setFilterValue(event.target.value)
-                }
-              />
-            </div>
-          </CardContent>
-        </Card>
+      <Card className="mb-5">
+        <CardHeader>
+          <CardTitle>Filters</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="column-1 w-1/3">
+            <Label htmlFor="orderId">Order Id</Label>
+            <Input
+              id="orderId"
+              value={
+                (table.getColumn("orderId")?.getFilterValue() as string) ?? ""
+              }
+              onChange={(event) =>
+                table.getColumn("orderId")?.setFilterValue(event.target.value)
+              }
+            />
+          </div>
+        </CardContent>
+      </Card>
       <div className="rounded-md border">
         <Table>
           <TableHeader>

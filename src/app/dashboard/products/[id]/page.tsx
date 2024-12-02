@@ -34,32 +34,31 @@ export default function Page({ params }: { params: { id: string } }) {
         </CardHeader>
         <CardContent>
           <div className="mb-4">
-            <h3 className="font-medium">ID</h3>
+            <h3 className="font-medium">ID:</h3>
             <p>{product.id}</p>
           </div>
           <div className="mb-4">
-            <h3 className="font-medium">Name</h3>
+            <h3 className="font-medium">Name:</h3>
             <p>{product.name}</p>
           </div>
           <div className="mb-4">
-            <h3 className="font-medium">Category</h3>
+            <h3 className="font-medium">Category:</h3>
             <p>{product.category}</p>
           </div>
           <div className="mb-4">
-            <h3 className="font-medium">Price</h3>
+            <h3 className="font-medium">Price:</h3>
             <p>{product.price}</p>
           </div>
           <div className="mb-4">
-            <h3 className="font-medium">Brand</h3>
+            <h3 className="font-medium">Brand:</h3>
             <p>{product.brand}</p>
           </div>
           <div className="mb-4">
-            <h3 className="font-medium">Colors</h3>
-            <p>{product.colors}</p>
-          </div>
-          <div className="mb-4">
-            <h3 className="font-medium">Sizes</h3>
-            <p>{product.sizes}</p>
+            <h3 className="font-medium">Stocks:</h3>
+
+            {product.stocks.map((item, index) => (
+              <p key={index}>{item}</p>
+            ))}
           </div>
         </CardContent>
       </Card>

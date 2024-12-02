@@ -1,6 +1,7 @@
 // lib/api/users.ts
 import axiosInstance from "./axiosInstance";
 import { Product } from "@/types/product";
+import { fetchInventoryBySku } from "./inventory";
 
 export const fetchProducts = async (): Promise<Product[]> => {
   const response = await axiosInstance.get("/product/");
@@ -32,15 +33,22 @@ export const fetchProducts = async (): Promise<Product[]> => {
 
 export const fetchProductById = async (productId: string): Promise<Product> => {
   const response = await axiosInstance.get(`/product/${productId}`);
-
   const product: any = response.data;
 
-  const colors = product.variants
-    .map((variant: any) => variant.color)
-    .join(", ");
-  const sizes = product.variants
-    .flatMap((variant: any) => variant.sizes.map((size: any) => size.size))
-    .join(", ");
+  const stocks: string[] = [];
+
+  for (const variant of product.variants) {
+    const color = variant.color;
+    for (const size of variant.sizes) {
+      const inventory = await fetchInventoryBySku(size.sku);
+
+      const quantity = inventory?.quantity || 0;
+
+      stocks.push(
+        `Color- ${color} , Size- ${size.size} , On Stocks- ${quantity}`
+      );
+    }
+  }
 
   return {
     id: product.id,
@@ -48,7 +56,6 @@ export const fetchProductById = async (productId: string): Promise<Product> => {
     category: product.category,
     price: product.price,
     brand: product.brand,
-    colors,
-    sizes,
+    stocks,
   };
 };

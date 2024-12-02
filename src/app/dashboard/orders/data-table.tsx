@@ -95,7 +95,7 @@ export function DataTable<TData, TValue>({
           </div>
         </CardContent>
       </Card>
-      <Card className="mb-5">
+      {/* <Card className="mb-5">
         <CardContent className="pt-5">
           <div className="flex justify-end">
             <div className="flex gap-4">
@@ -106,7 +106,7 @@ export function DataTable<TData, TValue>({
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>

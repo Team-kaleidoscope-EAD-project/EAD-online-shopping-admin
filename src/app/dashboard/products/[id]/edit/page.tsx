@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import axiosInstance from "@/lib/api/axiosInstance";
+import { useRouter } from "next/navigation";
 
 interface Variant {
   color: string;
@@ -42,6 +43,8 @@ export default function ProductForm({ params }: { params: { id: string } }) {
   const { handleSubmit, control, register, setValue } = useForm<Product>();
   const [variants, setVariants] = useState<Variant[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+
+  const router = useRouter();
 
   useEffect(() => {
     // Fetch product data by ID
@@ -131,6 +134,8 @@ export default function ProductForm({ params }: { params: { id: string } }) {
         `/product/${params.id}`,
         formattedData
       );
+
+      router.push("/dashboard/products");
 
       // Handle successful update
       console.log("Product updated successfully");

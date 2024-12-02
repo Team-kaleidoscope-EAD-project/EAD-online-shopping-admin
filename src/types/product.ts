@@ -4,6 +4,5 @@ export interface Product {
   category: string;
   price: number;
   brand: string;
-  colors: string;
-  sizes: string;
+  stocks: string[]; // Add stocks as a string array
 }

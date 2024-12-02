@@ -15,8 +15,8 @@ export const columns: ColumnDef<OrderItem>[] = [
     header: () => <div className="text-left">ID</div>,
   },
   {
-    accessorKey: "productId",
-    header: () => <div className="text-left">Product ID</div>,
+    accessorKey: "orderId",
+    header: () => <div className="text-left">Order ID</div>,
   },
   {
     accessorKey: "quantity",

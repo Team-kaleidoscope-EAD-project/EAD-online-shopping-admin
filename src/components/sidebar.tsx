@@ -26,7 +26,7 @@ export default function Sidebar({ className }: SidebarProps) {
           href="/dashboard"
           className="flex items-center gap-2 font-semibold"
         >
-          <span className="">Acme Inc</span>
+          <span className="">Kalei Clothing</span>
         </Link>
       </div>
       <div className="px-3 py-2">
@@ -39,10 +39,10 @@ export default function Sidebar({ className }: SidebarProps) {
       </div>
       <div className="mt-auto p-4">
         <nav className="grid items-start text-sm font-medium gap-2">
-          <NavItem href="/dashboard/settings">
+          {/* <NavItem href="/dashboard/settings">
             <Settings className="h-4 w-4" />
             Settings
-          </NavItem>
+          </NavItem> */}
           <hr className="my-1" />
           <NavItem href="/dashboard/account">
             <User className="h-4 w-4" />

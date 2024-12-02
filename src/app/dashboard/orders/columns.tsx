@@ -42,30 +42,30 @@ export const columns: ColumnDef<Order>[] = [
       return <div className="font-medium">{formatted}</div>;
     },
   },
-  {
-    accessorKey: "discountAmount",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          className="px-0 hover:bg-unset"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Discounted Amount
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("discountAmount"));
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(amount);
+  // {
+  //   accessorKey: "discountAmount",
+  //   header: ({ column }) => {
+  //     return (
+  //       <Button
+  //         variant="ghost"
+  //         className="px-0 hover:bg-unset"
+  //         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+  //       >
+  //         Discounted Amount
+  //         <ArrowUpDown className="ml-2 h-4 w-4" />
+  //       </Button>
+  //     );
+  //   },
+  //   cell: ({ row }) => {
+  //     const amount = parseFloat(row.getValue("discountAmount"));
+  //     const formatted = new Intl.NumberFormat("en-US", {
+  //       style: "currency",
+  //       currency: "USD",
+  //     }).format(amount);
 
-      return <div className="font-medium">{formatted}</div>;
-    },
-  },
+  //     return <div className="font-medium">{formatted}</div>;
+  //   },
+  // },
   {
     accessorKey: "orderDate",
     header: ({ column }) => {
@@ -87,7 +87,7 @@ export const columns: ColumnDef<Order>[] = [
         month: "short",
         day: "numeric",
       }).format(date);
-  
+
       return <div className="font-medium">{formatted}</div>;
     },
   },

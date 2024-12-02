@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import axiosInstance from "@/lib/api/axiosInstance";
+import { useRouter } from "next/navigation";
+import { addInventory } from "@/lib/api/inventory";
 
 interface Variant {
   color: string;
@@ -20,12 +22,20 @@ interface Variant {
   sizes: string[];
 }
 
+interface Stock {
+  sizeStocks: number[];
+}
+
 export default function ProductForm() {
   const { handleSubmit, control, register } = useForm();
   const [variants, setVariants] = useState<Variant[]>([]);
+  const [stocks, setStocks] = useState<Stock[]>([]);
+
+  const router = useRouter();
 
   const addVariant = () => {
     setVariants([...variants, { color: "", image: null, sizes: [] }]);
+    setStocks([...stocks, { sizeStocks: [0] }]);
   };
 
   const removeVariant = (index: number) => {
@@ -38,8 +48,20 @@ export default function ProductForm() {
     newSize: string
   ) => {
     const updatedVariants = [...variants];
+
     updatedVariants[variantIndex].sizes[sizeIndex] = newSize;
     setVariants(updatedVariants);
+  };
+
+  const handleStockChange = (
+    variantIndex: number,
+    stockIndex: number,
+    newStock: number
+  ) => {
+    const updatedVariants = [...stocks];
+
+    updatedVariants[variantIndex].sizeStocks[stockIndex] = newStock;
+    setStocks(updatedVariants);
   };
 
   const addSizeField = (variantIndex: number) => {
@@ -69,7 +91,6 @@ export default function ProductForm() {
         sizes: variant.sizes.map((size) => ({ size })),
       })),
     };
-    console.log(formattedData);
 
     try {
       const response = await axiosInstance.post(
@@ -77,8 +98,11 @@ export default function ProductForm() {
         formattedData
       );
 
-      // Handle successful update
-      console.log("Product added successfully");
+      await addInventory(response.data, stocks);
+
+      router.push("/dashboard/products");
+
+      // console.log("Product added successfully", response);
     } catch (error) {
       console.error("Error adding product:", error);
     }
@@ -94,7 +118,12 @@ export default function ProductForm() {
           <Input {...register("name")} placeholder="Product Name" />
           <Input {...register("description")} placeholder="Description" />
           <Input {...register("brand")} placeholder="Brand" />
-          <Input {...register("price")} placeholder="Price" type="number" />
+          <Input
+            {...register("price")}
+            placeholder="Price"
+            type="number"
+            step="any"
+          />
           <Controller
             control={control}
             name="category"
@@ -156,8 +185,23 @@ export default function ProductForm() {
                           handleSizeChange(index, sizeIndex, e.target.value)
                         }
                       />
+
+                      <Input
+                        placeholder="Stock"
+                        type="number"
+                        // value={size.stock}
+                        onChange={(e) =>
+                          handleStockChange(
+                            index,
+                            sizeIndex,
+                            Number(e.target.value)
+                          )
+                        }
+                      />
+
                       <Button
                         variant="destructive"
+                        type="button"
                         onClick={() => removeSizeField(index, sizeIndex)}
                       >
                         Remove
@@ -165,12 +209,17 @@ export default function ProductForm() {
                     </div>
                   ))}
                 </div>
-                <Button className="mt-2" onClick={() => addSizeField(index)}>
+                <Button
+                  type="button"
+                  className="mt-2"
+                  onClick={() => addSizeField(index)}
+                >
                   Add Size
                 </Button>
               </div>
               <Button
                 variant="destructive"
+                type="button"
                 className="mt-4"
                 onClick={() => removeVariant(index)}
               >
@@ -178,7 +227,7 @@ export default function ProductForm() {
               </Button>
             </div>
           ))}
-          <Button className="mt-4" onClick={addVariant}>
+          <Button type="button" className="mt-4" onClick={addVariant}>
             Add Variant
           </Button>
         </CardContent>
