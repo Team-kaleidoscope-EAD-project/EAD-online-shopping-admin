@@ -2,13 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-interface Product {
-  id: string;
-  name: string;
-  organization: string;
-  email: string;
-}
+import { fetchProductById } from "@/lib/api/products";
+import { Product } from "@/types/product";
 
 export default function Page({ params }: { params: { id: string } }) {
   const [product, setProduct] = useState<Product | null>(null);
@@ -16,11 +11,8 @@ export default function Page({ params }: { params: { id: string } }) {
   useEffect(() => {
     const fetchProductData = async () => {
       try {
-        const response = await fetch(`/api/products/${params.id}`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch product data");
-        }
-        const data: Product = await response.json();
+        const data = await fetchProductById(params.id);
+
         setProduct(data);
       } catch (error) {
         console.error("Error fetching product data:", error);
@@ -50,12 +42,24 @@ export default function Page({ params }: { params: { id: string } }) {
             <p>{product.name}</p>
           </div>
           <div className="mb-4">
-            <h3 className="font-medium">Organization</h3>
-            <p>{product.organization}</p>
+            <h3 className="font-medium">Category</h3>
+            <p>{product.category}</p>
           </div>
           <div className="mb-4">
-            <h3 className="font-medium">Email</h3>
-            <p>{product.email}</p>
+            <h3 className="font-medium">Price</h3>
+            <p>{product.price}</p>
+          </div>
+          <div className="mb-4">
+            <h3 className="font-medium">Brand</h3>
+            <p>{product.brand}</p>
+          </div>
+          <div className="mb-4">
+            <h3 className="font-medium">Colors</h3>
+            <p>{product.colors}</p>
+          </div>
+          <div className="mb-4">
+            <h3 className="font-medium">Sizes</h3>
+            <p>{product.sizes}</p>
           </div>
         </CardContent>
       </Card>

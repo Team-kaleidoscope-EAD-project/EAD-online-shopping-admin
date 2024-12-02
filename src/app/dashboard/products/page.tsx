@@ -1,3 +1,4 @@
+import { fetchProducts } from "@/lib/api/products";
 import { columnsProduct } from "./columns";
 import { DataTableProduct } from "./data-table-product";
 
@@ -35,7 +36,7 @@ async function getData(): Promise<Product[]> {
   ];
 
   // try {
-  //   const response = await fetch("/api/products"); 
+  //   const response = await fetch("/api/products");
   //   if (!response.ok) {
   //     throw new Error("Failed to fetch products");
   //   }
@@ -48,7 +49,7 @@ async function getData(): Promise<Product[]> {
 }
 
 export default async function Page() {
-  const data = await getData();
+  const data = await fetchProducts();
 
   return (
     <>

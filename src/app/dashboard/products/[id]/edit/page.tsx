@@ -4,12 +4,19 @@ import React, { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import axiosInstance from "@/lib/api/axiosInstance";
 
 interface Variant {
   color: string;
-  image: File | null;
+  imageUrl: File | null;
   sizes: string[];
 }
 
@@ -31,7 +38,7 @@ interface ProductFormProps {
   productId: string;
 }
 
-export default function ProductForm({ productId }: ProductFormProps) {
+export default function ProductForm({ params }: { params: { id: string } }) {
   const { handleSubmit, control, register, setValue } = useForm<Product>();
   const [variants, setVariants] = useState<Variant[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -40,9 +47,9 @@ export default function ProductForm({ productId }: ProductFormProps) {
     // Fetch product data by ID
     const fetchProductData = async () => {
       try {
-        const response = await fetch(`/api/products/${productId}`);
-        const productData: Product = await response.json();
-        
+        const response = await axiosInstance(`/product/${params.id}`);
+        const productData: Product = response.data;
+
         // Populate form with fetched data
         setValue("name", productData.name);
         setValue("description", productData.description);
@@ -68,17 +75,21 @@ export default function ProductForm({ productId }: ProductFormProps) {
 
     fetchProductData();
     fetchCategories();
-  }, [productId, setValue]);
+  }, [params.id, setValue]);
 
   const addVariant = () => {
-    setVariants([...variants, { color: "", image: null, sizes: [] }]);
+    setVariants([...variants, { color: "", imageUrl: null, sizes: [] }]);
   };
 
   const removeVariant = (index: number) => {
     setVariants(variants.filter((_, i) => i !== index));
   };
 
-  const handleSizeChange = (variantIndex: number, sizeIndex: number, newSize: string) => {
+  const handleSizeChange = (
+    variantIndex: number,
+    sizeIndex: number,
+    newSize: string
+  ) => {
     const updatedVariants = [...variants];
     updatedVariants[variantIndex].sizes[sizeIndex] = newSize;
     setVariants(updatedVariants);
@@ -98,34 +109,30 @@ export default function ProductForm({ productId }: ProductFormProps) {
 
   const handleImageChange = (index: number, file: File) => {
     const updatedVariants = [...variants];
-    updatedVariants[index].image = file;
+    updatedVariants[index].imageUrl = file;
     setVariants(updatedVariants);
   };
 
   const handleFormSubmit = async (data: any) => {
+    // console.log("avr", variants);
     const formattedData = {
       ...data,
       variants: variants.map((variant) => ({
         color: variant.color,
-        imageUrl: variant.image ? URL.createObjectURL(variant.image) : null,
-        sizes: variant.sizes.map((size) => ({ size })),
+        imageUrl: variant.imageUrl ? variant.imageUrl : null,
+        sizes: variant.sizes,
       })),
     };
 
+    console.log(formattedData);
+
     try {
-      const response = await fetch(`/api/products/${productId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formattedData),
-      });
+      const response = await axiosInstance.put(
+        `/product/${params.id}`,
+        formattedData
+      );
 
-      if (!response.ok) {
-        throw new Error("Failed to update product");
-      }
-
-      // Handle successful update 
+      // Handle successful update
       console.log("Product updated successfully");
     } catch (error) {
       console.error("Error updating product:", error);
@@ -142,7 +149,14 @@ export default function ProductForm({ productId }: ProductFormProps) {
           <Input {...register("name")} placeholder="Product Name" />
           <Input {...register("description")} placeholder="Description" />
           <Input {...register("brand")} placeholder="Brand" />
-          <Input {...register("price")} placeholder="Price" type="number" />
+
+          <Input
+            {...register("price")}
+            placeholder="Price"
+            type="number"
+            step="any"
+          />
+
           <Controller
             control={control}
             name="category"
@@ -176,7 +190,9 @@ export default function ProductForm({ productId }: ProductFormProps) {
                 value={variant.color}
                 onChange={(e) =>
                   setVariants(
-                    variants.map((v, i) => (i === index ? { ...v, color: e.target.value } : v))
+                    variants.map((v, i) =>
+                      i === index ? { ...v, color: e.target.value } : v
+                    )
                   )
                 }
               />
@@ -191,15 +207,19 @@ export default function ProductForm({ productId }: ProductFormProps) {
               />
               <div>
                 <label>Sizes:</label>
+
                 <div className="space-y-2">
-                  {variant.sizes.map((size, sizeIndex) => (
-                    <div key={sizeIndex} className="flex items-center space-x-2">
+                  {variant.sizes.map((size: any, sizeIndex) => (
+                    <div
+                      key={sizeIndex}
+                      className="flex items-center space-x-2"
+                    >
                       <Input
                         placeholder="Size"
-                        value={size}
-                        onChange={(e) =>
-                          handleSizeChange(index, sizeIndex, e.target.value)
-                        }
+                        value={size.size}
+                        onChange={(e) => {
+                          handleSizeChange(index, sizeIndex, e.target.value);
+                        }}
                       />
                       <Button
                         variant="destructive"
@@ -210,10 +230,7 @@ export default function ProductForm({ productId }: ProductFormProps) {
                     </div>
                   ))}
                 </div>
-                <Button
-                  className="mt-2"
-                  onClick={() => addSizeField(index)}
-                >
+                <Button className="mt-2" onClick={() => addSizeField(index)}>
                   Add Size
                 </Button>
               </div>

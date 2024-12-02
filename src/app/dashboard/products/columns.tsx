@@ -4,16 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, Eye, Pencil, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-
-export type Product = {
-  id: string;
-  name: string;
-  category: string;
-  price: number;
-  colors: string;
-  brand: string;
-  sizes: string;
-};
+import { Product } from "@/types/product";
 
 export const columnsProduct: ColumnDef<Product>[] = [
   {
@@ -46,8 +37,8 @@ export const columnsProduct: ColumnDef<Product>[] = [
     header: () => <div className="text-left">Brand</div>,
   },
   {
-    accessorKey: "sizes",
-    header: () => <div className="text-left">Sizes</div>,
+    accessorKey: "price",
+    header: () => <div className="text-left">Prices</div>,
   },
   {
     id: "actions",

@@ -4,8 +4,15 @@ import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import axiosInstance from "@/lib/api/axiosInstance";
 
 interface Variant {
   color: string;
@@ -25,7 +32,11 @@ export default function ProductForm() {
     setVariants(variants.filter((_, i) => i !== index));
   };
 
-  const handleSizeChange = (variantIndex: number, sizeIndex: number, newSize: string) => {
+  const handleSizeChange = (
+    variantIndex: number,
+    sizeIndex: number,
+    newSize: string
+  ) => {
     const updatedVariants = [...variants];
     updatedVariants[variantIndex].sizes[sizeIndex] = newSize;
     setVariants(updatedVariants);
@@ -49,7 +60,7 @@ export default function ProductForm() {
     setVariants(updatedVariants);
   };
 
-  const onSubmit = (data: any) => {
+  const onSubmit = async (data: any) => {
     const formattedData = {
       ...data,
       variants: variants.map((variant) => ({
@@ -59,6 +70,18 @@ export default function ProductForm() {
       })),
     };
     console.log(formattedData);
+
+    try {
+      const response = await axiosInstance.post(
+        `/product/addproduct`,
+        formattedData
+      );
+
+      // Handle successful update
+      console.log("Product added successfully");
+    } catch (error) {
+      console.error("Error adding product:", error);
+    }
   };
 
   return (
@@ -103,7 +126,9 @@ export default function ProductForm() {
                 value={variant.color}
                 onChange={(e) =>
                   setVariants(
-                    variants.map((v, i) => (i === index ? { ...v, color: e.target.value } : v))
+                    variants.map((v, i) =>
+                      i === index ? { ...v, color: e.target.value } : v
+                    )
                   )
                 }
               />
@@ -120,7 +145,10 @@ export default function ProductForm() {
                 <label>Sizes:</label>
                 <div className="space-y-2">
                   {variant.sizes.map((size, sizeIndex) => (
-                    <div key={sizeIndex} className="flex items-center space-x-2">
+                    <div
+                      key={sizeIndex}
+                      className="flex items-center space-x-2"
+                    >
                       <Input
                         placeholder="Size"
                         value={size}
@@ -137,10 +165,7 @@ export default function ProductForm() {
                     </div>
                   ))}
                 </div>
-                <Button
-                  className="mt-2"
-                  onClick={() => addSizeField(index)}
-                >
+                <Button className="mt-2" onClick={() => addSizeField(index)}>
                   Add Size
                 </Button>
               </div>
