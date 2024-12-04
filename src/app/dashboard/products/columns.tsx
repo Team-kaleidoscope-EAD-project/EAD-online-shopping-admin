@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Product } from "@/types/product";
 import axiosInstance from "@/lib/api/axiosInstance";
+import { toast } from "react-toastify";
 
 export const columnsProduct: ColumnDef<Product>[] = [
   {
@@ -51,10 +52,14 @@ export const columnsProduct: ColumnDef<Product>[] = [
         try {
           const res = await axiosInstance.delete("/product/" + product.id);
 
-          window.location.reload();
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
         } catch (error) {
           console.log("Error deleting", error);
         }
+
+        toast.info("Deleting product!");
       };
 
       return (

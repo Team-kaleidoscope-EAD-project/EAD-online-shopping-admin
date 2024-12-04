@@ -68,7 +68,7 @@ export function DataTable<TData, TValue>({
         </CardHeader>
         <CardContent>
           <div className="column-1 w-1/3">
-            <Label htmlFor="orderId">Order Id</Label>
+            <Label htmlFor="orderId">Order Item Id</Label>
             <Input
               id="orderId"
               value={
