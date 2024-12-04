@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  kalei_admin:
+    build: .
+    image: kalei_admin
+    container_name: kalei_admin
+    ports:
+      - "3001:3000"

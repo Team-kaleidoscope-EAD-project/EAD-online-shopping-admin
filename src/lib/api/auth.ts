@@ -1,5 +1,13 @@
 import axios from "axios";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
+
+interface DecodeToken extends JwtPayload {
+  resource_access?: {
+    [key: string]: {
+      roles: string[];
+    };
+  };
+}
 
 export const keycloakAuth = async (email: string, password: string) => {
   try {
@@ -13,8 +21,8 @@ export const keycloakAuth = async (email: string, password: string) => {
       })
     );
 
-    const decodedToken = jwt.decode(response.data.access_token);
-
+    const decodedToken = jwt.decode(response.data.access_token) as DecodeToken | null;
+    
     if (
       decodedToken?.resource_access?.["react-frontend"]?.roles[1] !==
       "kalei_ADMIN"
