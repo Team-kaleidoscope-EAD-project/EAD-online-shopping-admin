@@ -27,17 +27,19 @@ interface Stock {
   sizeStocks: number[];
 }
 
-// AWS Configuration
-// AWS.config.update({
-//   accessKeyId: "AKIASBGQK5ZFBFOCLGG4", // Access Key ID from .env file
-//   secretAccessKey: "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", // Secret Access Key from .env file
-//   region: "eu-north-1", // AWS region from .env file
-// });
+//AWS Configuration
+AWS.config.update({
+  accessKeyId: "AKIASBGQK5ZFBFOCLGG4", // Access Key ID from .env file
+  secretAccessKey: "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", // Secret Access Key from .env file
+  region: "eu-north-1", // AWS region from .env file
+});
 
 const s3 = new AWS.S3({
   params: { Bucket: process.env.AWS_BUCKET_NAME },
   region: process.env.AWS_REGION,
 });
+
+console.log(process.env.S3_BUCKET_NAME);
 
 export default function ProductForm() {
   const { handleSubmit, control, register } = useForm();
@@ -61,19 +63,20 @@ export default function ProductForm() {
       Key: file.name, // Unique file name
       Body: file,
       ContentType: file.type,
-      ACL: 'public-read', // Make the file publicly accessible
+      ACL: "public-read", // Make the file publicly accessible
     };
     console.log("Uploading file to S3:", params);
     try {
-      const upload = s3.upload(params).on("httpUploadProgress", (evt) => {
-        if (evt.total) {
-          console.log(
-            `Uploading: ${Math.round((evt.loaded * 100) / evt.total)}%`
-
-          );
-
-        }
-      }).promise();
+      const upload = s3
+        .upload(params)
+        .on("httpUploadProgress", (evt) => {
+          if (evt.total) {
+            console.log(
+              `Uploading: ${Math.round((evt.loaded * 100) / evt.total)}%`
+            );
+          }
+        })
+        .promise();
 
       const response = await upload;
       console.log("File uploaded to S3:", response.Location);
@@ -87,7 +90,6 @@ export default function ProductForm() {
       // });
       // console.log("File uploaded to S3:", fileUrl);
       // alert("File uploaded successfully.");
-
     } catch (error) {
       console.error("Error uploading file:", error);
       alert("File upload failed.");
@@ -195,8 +197,10 @@ export default function ProductForm() {
                 <SelectContent>
                   <SelectItem value="Cap">OVERSIZED</SelectItem>
                   <SelectItem value="T-Shirt">JACKETS</SelectItem>
-                  <SelectItem value="Men&apos;s Wear">MEN&apos;S WEAR</SelectItem>
-                  <SelectItem value="Women&apos;s Wear">WOMEN&apos;S WEAR</SelectItem>
+                  <SelectItem value="Men's Wear">MEN&apos;S WEAR</SelectItem>
+                  <SelectItem value="Women's Wear">
+                    WOMEN&apos;S WEAR
+                  </SelectItem>
                   <SelectItem value="Denims">DENIMS</SelectItem>
                   <SelectItem value="Foot wear">FOOT WEAR</SelectItem>
                   <SelectItem value="Sports Wear">SPORTS WEAR</SelectItem>
@@ -245,18 +249,36 @@ export default function ProductForm() {
                       key={sizeIndex}
                       className="flex items-center space-x-2"
                     >
-                      <Input
-                        placeholder="Size"
-                        value={size}
-                        onChange={(e) =>
-                          handleSizeChange(index, sizeIndex, e.target.value)
-                        }
+                      <Controller
+                        control={control}
+                        name={`variants[${index}].sizes[${sizeIndex}]`} // Dynamic binding
+                        render={({ field }) => (
+                          <Select
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              handleSizeChange(index, sizeIndex, value); // Update size dynamically
+                            }}
+                            value={field.value || ""}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Size" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="All">ALL</SelectItem>
+                              <SelectItem value="XXS">XXS</SelectItem>
+                              <SelectItem value="XS">XS</SelectItem>
+                              <SelectItem value="S">S</SelectItem>
+                              <SelectItem value="M">M</SelectItem>
+                              <SelectItem value="L">L</SelectItem>
+                              <SelectItem value="XL">XL</SelectItem>
+                              <SelectItem value="XXL">XXL</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
                       />
-
                       <Input
                         placeholder="Stock"
                         type="number"
-                        // value={size.stock}
                         onChange={(e) =>
                           handleStockChange(
                             index,
@@ -265,7 +287,6 @@ export default function ProductForm() {
                           )
                         }
                       />
-
                       <Button
                         variant="destructive"
                         type="button"
@@ -284,6 +305,7 @@ export default function ProductForm() {
                   Add Size
                 </Button>
               </div>
+              ;
               <Button
                 variant="destructive"
                 type="button"
