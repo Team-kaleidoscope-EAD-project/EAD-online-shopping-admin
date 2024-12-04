@@ -18,6 +18,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { updateUserData } from "@/lib/api/updatetUserInfo";
+import { getUserInfoFromToken } from "@/lib/getUserInformationFromToken";
+import { useUserInfo } from "@/lib/userInfo";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -36,7 +39,6 @@ const profileFormSchema = z.object({
       required_error: "Please select an email to display.",
     })
     .email(),
-  phone: z.string().min(10),
 });
 
 const loginFormSchema = z.object({
@@ -62,9 +64,8 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>;
 type LoginFormValues = z.infer<typeof loginFormSchema>;
 
 const profileFormValues: Partial<ProfileFormValues> = {
-  name: "Dale Watson",
-  email: "dale@watson.com",
-  phone: "011 555 111",
+  name: getUserInfoFromToken().username,
+  email: getUserInfoFromToken().email,
 };
 
 const loginFormValues: Partial<LoginFormValues> = {};
@@ -83,7 +84,7 @@ export default function Page() {
   });
 
   function profileFormOnSubmit(data: ProfileFormValues) {
-    console.log(data);
+    updateUserData(data);
   }
 
   function loginFormOnSubmit(data: LoginFormValues) {
@@ -131,24 +132,13 @@ export default function Page() {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={profileForm.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Phone</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </form>
           </Form>
         </CardContent>
         <CardFooter className="border-t px-6 py-4">
-          <Button>Update</Button>
+          <Button onClick={profileForm.handleSubmit(profileFormOnSubmit)}>
+            Update
+          </Button>
         </CardFooter>
       </Card>
       <Card>
