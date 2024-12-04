@@ -16,6 +16,7 @@ import axiosInstance from "@/lib/api/axiosInstance";
 import { useRouter } from "next/navigation";
 import { addInventory } from "@/lib/api/inventory";
 import AWS from "aws-sdk";
+import { toast } from "react-toastify";
 
 interface Variant {
   color: string;
@@ -28,18 +29,17 @@ interface Stock {
 }
 
 //AWS Configuration
-AWS.config.update({
-  accessKeyId: "AKIASBGQK5ZFBFOCLGG4", // Access Key ID from .env file
-  secretAccessKey: "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", // Secret Access Key from .env file
-  region: "eu-north-1", // AWS region from .env file
-});
+
+// AWS.config.update({
+//   accessKeyId: "AKIASBGQK5ZFBFOCLGG4", // Access Key ID from .env file
+//   secretAccessKey: "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", // Secret Access Key from .env file
+//   region: "eu-north-1", // AWS region from .env file
+// });
 
 const s3 = new AWS.S3({
   params: { Bucket: process.env.AWS_BUCKET_NAME },
   region: process.env.AWS_REGION,
 });
-
-console.log(process.env.S3_BUCKET_NAME);
 
 export default function ProductForm() {
   const { handleSubmit, control, register } = useForm();
@@ -165,6 +165,7 @@ export default function ProductForm() {
       router.push("/dashboard/products");
 
       // console.log("Product added successfully", response);
+      toast.success("Product added successfully!");
     } catch (error) {
       console.error("Error adding product:", error);
     }
@@ -264,7 +265,7 @@ export default function ProductForm() {
                               <SelectValue placeholder="Size" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="All">ALL</SelectItem>
+                              <SelectItem value="FREE">FREE</SelectItem>
                               <SelectItem value="XXS">XXS</SelectItem>
                               <SelectItem value="XS">XS</SelectItem>
                               <SelectItem value="S">S</SelectItem>
@@ -305,7 +306,7 @@ export default function ProductForm() {
                   Add Size
                 </Button>
               </div>
-              ;
+
               <Button
                 variant="destructive"
                 type="button"
