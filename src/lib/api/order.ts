@@ -20,6 +20,7 @@ export const fetchOrderItems = async (orderId: any): Promise<OrderItem[]> => {
     `/order/getallorderitemsbyorderid/${orderId}`
   );
 
+  console.log(response.data);
   return response.data.map((orderItem: any) => ({
     id: orderItem.id,
     productId: orderItem.productId,
