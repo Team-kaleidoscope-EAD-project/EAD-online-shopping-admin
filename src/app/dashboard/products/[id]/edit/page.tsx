@@ -50,21 +50,45 @@ export default function ProductForm() {
   useEffect(() => {
     const fetchProductDetails = async () => {
       try {
+        // Fetch product details
         const response = await axiosInstance.get(`/product/${id}`);
         const product = response.data;
         console.log(product);
+
+        // Set initial values
         setValue("name", product.name);
         setValue("description", product.description);
         setValue("brand", product.brand);
         setValue("price", product.price);
         setValue("category", product.category);
-        setVariants(product.variants);
-        setStocks(
-          product.variants.map((variant: any) => ({
-            // sizeStocks: variant.sizes.map((size: any) => size.stock),
-          }))
+
+        // Fetch stock for each variant size
+        const updatedVariants = await Promise.all(
+          product.variants.map(async (variant: any) => {
+            const sizesWithStock = await Promise.all(
+              variant.sizes.map(async (size: any) => {
+                try {
+                  console.log(size.sku);
+                  const stockResponse = await axiosInstance.get(
+                    `/inventory/getinventoryitem/${size.sku}`
+                  );
+
+                  console.log(stockResponse.data);
+                  return { ...size, stock: stockResponse.data.quantity };
+                } catch (error) {
+                  console.error(
+                    `Error fetching stock for SKU ${size.sku}:`,
+                    error
+                  );
+                  return { ...size, stock: 0 };
+                }
+              })
+            );
+            return { ...variant, sizes: sizesWithStock };
+          })
         );
-        console.log(product.brand);
+
+        setVariants(updatedVariants);
       } catch (error) {
         console.error("Error fetching product details:", error);
       }
@@ -178,7 +202,7 @@ export default function ProductForm() {
       })),
     };
     try {
-      await axiosInstance.put(`/product/updateproduct/${id}`, formattedData);
+      await axiosInstance.put(`/product/${id}`, formattedData);
       router.push("/dashboard/products");
       toast.success("Product updated successfully!");
     } catch (error) {
@@ -309,7 +333,7 @@ export default function ProductForm() {
                       <Input
                         placeholder="Stock"
                         type="number"
-                        value={stocks[index].sizeStocks[sizeIndex]}
+                        value={variant.sizes[sizeIndex]?.stock || 0}
                         onChange={(e) =>
                           handleStockChange(
                             index,
