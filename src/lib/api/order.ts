@@ -22,7 +22,7 @@ export const fetchOrderItems = async (orderId: any): Promise<OrderItem[]> => {
 
   console.log(response.data);
   return response.data.map((orderItem: any) => ({
-    id: orderItem.id,
+    id: orderItem.sku,
     productId: orderItem.productId,
     orderId: orderItem.orderid,
     price: orderItem.price,
