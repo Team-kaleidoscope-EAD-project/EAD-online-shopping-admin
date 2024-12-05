@@ -13,79 +13,112 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import axiosInstance from "@/lib/api/axiosInstance";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
+import AWS from "aws-sdk";
+import { toast } from "react-toastify";
 
 interface Variant {
   color: string;
-  imageUrl: File | null;
-  sizes: string[];
+  image: string | null;
+  sizes: { size: string; stock: number }[];
 }
 
-interface Product {
-  name: string;
-  description: string;
-  brand: string;
-  price: number;
-  category: string;
-  variants: Variant[];
+interface Stock {
+  sizeStocks: number[];
 }
 
-interface Category {
-  id: string;
-  name: string;
-}
+//AWS Configuration
 
-interface ProductFormProps {
-  productId: string;
-}
+// AWS.config.update({
+//   accessKeyId: "AKIASBGQK5ZFBFOCLGG4", // Access Key ID from .env file
+//   secretAccessKey: "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", // Secret Access Key from .env file
+//   region: "eu-north-1", // AWS region from .env file
+// });
 
-export default function ProductForm({ params }: { params: { id: string } }) {
-  const { handleSubmit, control, register, setValue } = useForm<Product>();
+const s3 = new AWS.S3({
+  params: { Bucket: process.env.AWS_BUCKET_NAME },
+  region: process.env.AWS_REGION,
+});
+
+export default function ProductForm() {
+  const { handleSubmit, control, register, setValue } = useForm();
   const [variants, setVariants] = useState<Variant[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-
+  const [stocks, setStocks] = useState<Stock[]>([]);
   const router = useRouter();
+  const { id } = useParams();
 
   useEffect(() => {
-    // Fetch product data by ID
-    const fetchProductData = async () => {
+    const fetchProductDetails = async () => {
       try {
-        const response = await axiosInstance(`/product/${params.id}`);
-        const productData: Product = response.data;
-
-        // Populate form with fetched data
-        setValue("name", productData.name);
-        setValue("description", productData.description);
-        setValue("brand", productData.brand);
-        setValue("price", productData.price);
-        setValue("category", productData.category);
-        setVariants(productData.variants);
+        const response = await axiosInstance.get(`/product/${id}`);
+        const product = response.data;
+        console.log(product);
+        setValue("name", product.name);
+        setValue("description", product.description);
+        setValue("brand", product.brand);
+        setValue("price", product.price);
+        setValue("category", product.category);
+        setVariants(product.variants);
+        setStocks(
+          product.variants.map((variant: any) => ({
+            // sizeStocks: variant.sizes.map((size: any) => size.stock),
+          }))
+        );
+        console.log(product.brand);
       } catch (error) {
-        console.error("Failed to fetch product data:", error);
+        console.error("Error fetching product details:", error);
       }
     };
 
-    // Fetch categories from the backend
-    const fetchCategories = async () => {
-      try {
-        const response = await fetch("/api/categories");
-        const categoriesData: Category[] = await response.json();
-        setCategories(categoriesData);
-      } catch (error) {
-        console.error("Failed to fetch categories:", error);
-      }
-    };
-
-    fetchProductData();
-    fetchCategories();
-  }, [params.id, setValue]);
+    fetchProductDetails();
+  }, [id, setValue]);
 
   const addVariant = () => {
-    setVariants([...variants, { color: "", imageUrl: null, sizes: [] }]);
+    setVariants([...variants, { color: "", image: null, sizes: [] }]);
+    setStocks([...stocks, { sizeStocks: [0] }]);
   };
 
   const removeVariant = (index: number) => {
     setVariants(variants.filter((_, i) => i !== index));
+  };
+
+  const uploadImageToS3 = async (file: File) => {
+    const params = {
+      Bucket: "eadadmins3bucket", // S3 Bucket Name from .env
+      Key: file.name, // Unique file name
+      Body: file,
+      ContentType: file.type,
+      ACL: "public-read", // Make the file publicly accessible
+    };
+    console.log("Uploading file to S3:", params);
+    try {
+      const upload = s3
+        .upload(params)
+        .on("httpUploadProgress", (evt) => {
+          if (evt.total) {
+            console.log(
+              `Uploading: ${Math.round((evt.loaded * 100) / evt.total)}%`
+            );
+          }
+        })
+        .promise();
+
+      const response = await upload;
+      console.log("File uploaded to S3:", response.Location);
+      return response.Location;
+      // const fileUrl = `https://eadadmins3bucket.s3.eu-north-1.amazonaws.com/${file.name}`;
+      // Generate the signed URL for downloading
+      // const downloadUrl = s3.getSignedUrl("getObject", {
+      //   Bucket: params.Bucket,
+      //   Key: params.Key,
+      //   Expires: 60 * 60, // URL expiration time in seconds (1 hour in this case)
+      // });
+      // console.log("File uploaded to S3:", fileUrl);
+      // alert("File uploaded successfully.");
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      alert("File upload failed.");
+    }
   };
 
   const handleSizeChange = (
@@ -94,13 +127,23 @@ export default function ProductForm({ params }: { params: { id: string } }) {
     newSize: string
   ) => {
     const updatedVariants = [...variants];
-    updatedVariants[variantIndex].sizes[sizeIndex] = newSize;
+    updatedVariants[variantIndex].sizes[sizeIndex].size = newSize;
     setVariants(updatedVariants);
+  };
+
+  const handleStockChange = (
+    variantIndex: number,
+    stockIndex: number,
+    newStock: number
+  ) => {
+    const updatedStocks = [...stocks];
+    updatedStocks[variantIndex].sizeStocks[stockIndex] = newStock;
+    setStocks(updatedStocks);
   };
 
   const addSizeField = (variantIndex: number) => {
     const updatedVariants = [...variants];
-    updatedVariants[variantIndex].sizes.push("");
+    updatedVariants[variantIndex].sizes.push({ size: "", stock: 0 });
     setVariants(updatedVariants);
   };
 
@@ -110,42 +153,41 @@ export default function ProductForm({ params }: { params: { id: string } }) {
     setVariants(updatedVariants);
   };
 
-  const handleImageChange = (index: number, file: File) => {
+  const handleImageChange = async (index: number, file: File) => {
     const updatedVariants = [...variants];
-    updatedVariants[index].imageUrl = file;
-    setVariants(updatedVariants);
+
+    try {
+      const imageUrl = await uploadImageToS3(file); // Upload image to S3 and get URL
+      updatedVariants[index].image = imageUrl; // Store the image URL
+      setVariants(updatedVariants);
+    } catch (error) {
+      console.error("Error handling image upload:", error);
+    }
   };
 
-  const handleFormSubmit = async (data: any) => {
-    // console.log("avr", variants);
+  const onSubmit = async (data: any) => {
     const formattedData = {
       ...data,
       variants: variants.map((variant) => ({
         color: variant.color,
-        imageUrl: variant.imageUrl ? variant.imageUrl : null,
-        sizes: variant.sizes,
+        imageUrl: variant.image, // Use the image URL from the S3 upload
+        sizes: variant.sizes.map((size, index) => ({
+          size: size.size,
+          stock: stocks[index].sizeStocks[index], // Assuming stocks data is also managed properly
+        })),
       })),
     };
-
-    console.log(formattedData);
-
     try {
-      const response = await axiosInstance.put(
-        `/product/${params.id}`,
-        formattedData
-      );
-
+      await axiosInstance.put(`/product/updateproduct/${id}`, formattedData);
       router.push("/dashboard/products");
-
-      // Handle successful update
-      console.log("Product updated successfully");
+      toast.success("Product updated successfully!");
     } catch (error) {
       console.error("Error updating product:", error);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-8">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Product Details</CardTitle>
@@ -153,15 +195,27 @@ export default function ProductForm({ params }: { params: { id: string } }) {
         <CardContent className="space-y-4">
           <Input {...register("name")} placeholder="Product Name" />
           <Input {...register("description")} placeholder="Description" />
-          <Input {...register("brand")} placeholder="Brand" />
-
+          <Controller
+            control={control}
+            name="brand"
+            render={({ field }) => (
+              <Select onValueChange={field.onChange} value={field.value}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="men">Men</SelectItem>
+                  <SelectItem value="women">Women</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+          />
           <Input
             {...register("price")}
             placeholder="Price"
             type="number"
             step="any"
           />
-
           <Controller
             control={control}
             name="category"
@@ -171,11 +225,18 @@ export default function ProductForm({ params }: { params: { id: string } }) {
                   <SelectValue placeholder="Select Category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.name}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="Cap">OVERSIZED</SelectItem>
+                  <SelectItem value="T-Shirt">JACKETS</SelectItem>
+                  <SelectItem value="Men's Wear">MEN&apos;S WEAR</SelectItem>
+                  <SelectItem value="Women's Wear">
+                    WOMEN&apos;S WEAR
+                  </SelectItem>
+                  <SelectItem value="Denims">DENIMS</SelectItem>
+                  <SelectItem value="Foot wear">FOOT WEAR</SelectItem>
+                  <SelectItem value="Sports Wear">SPORTS WEAR</SelectItem>
+                  <SelectItem value="Watches">WATCHES</SelectItem>
+                  <SelectItem value="Head Wear">HEAD WEAR</SelectItem>
+                  <SelectItem value="Glasses">GLASSES</SelectItem>
                 </SelectContent>
               </Select>
             )}
@@ -212,22 +273,54 @@ export default function ProductForm({ params }: { params: { id: string } }) {
               />
               <div>
                 <label>Sizes:</label>
-
                 <div className="space-y-2">
-                  {variant.sizes.map((size: any, sizeIndex) => (
+                  {variant.sizes.map((size, sizeIndex) => (
                     <div
                       key={sizeIndex}
                       className="flex items-center space-x-2"
                     >
+                      <Controller
+                        control={control}
+                        name={`variants[${index}].sizes[${sizeIndex}]`}
+                        render={({ field }) => (
+                          <Select
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              handleSizeChange(index, sizeIndex, value);
+                            }}
+                            value={size.size || ""}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Size" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="FREE">FREE</SelectItem>
+                              <SelectItem value="XXS">XXS</SelectItem>
+                              <SelectItem value="XS">XS</SelectItem>
+                              <SelectItem value="S">S</SelectItem>
+                              <SelectItem value="M">M</SelectItem>
+                              <SelectItem value="L">L</SelectItem>
+                              <SelectItem value="XL">XL</SelectItem>
+                              <SelectItem value="XXL">XXL</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
                       <Input
-                        placeholder="Size"
-                        value={size.size}
-                        onChange={(e) => {
-                          handleSizeChange(index, sizeIndex, e.target.value);
-                        }}
+                        placeholder="Stock"
+                        type="number"
+                        value={stocks[index].sizeStocks[sizeIndex]}
+                        onChange={(e) =>
+                          handleStockChange(
+                            index,
+                            sizeIndex,
+                            Number(e.target.value)
+                          )
+                        }
                       />
                       <Button
                         variant="destructive"
+                        type="button"
                         onClick={() => removeSizeField(index, sizeIndex)}
                       >
                         Remove
@@ -235,12 +328,18 @@ export default function ProductForm({ params }: { params: { id: string } }) {
                     </div>
                   ))}
                 </div>
-                <Button className="mt-2" onClick={() => addSizeField(index)}>
+                <Button
+                  type="button"
+                  className="mt-2"
+                  onClick={() => addSizeField(index)}
+                >
                   Add Size
                 </Button>
               </div>
+
               <Button
                 variant="destructive"
+                type="button"
                 className="mt-4"
                 onClick={() => removeVariant(index)}
               >
@@ -248,13 +347,13 @@ export default function ProductForm({ params }: { params: { id: string } }) {
               </Button>
             </div>
           ))}
-          <Button className="mt-4" onClick={addVariant}>
+          <Button type="button" className="mt-4" onClick={addVariant}>
             Add Variant
           </Button>
         </CardContent>
       </Card>
 
-      <Button type="submit">Submit</Button>
+      <Button type="submit">Update</Button>
     </form>
   );
 }

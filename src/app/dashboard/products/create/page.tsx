@@ -30,11 +30,11 @@ interface Stock {
 
 //AWS Configuration
 
-// AWS.config.update({
-//   accessKeyId: "AKIASBGQK5ZFBFOCLGG4", // Access Key ID from .env file
-//   secretAccessKey: "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", // Secret Access Key from .env file
-//   region: "eu-north-1", // AWS region from .env file
-// });
+AWS.config.update({
+  accessKeyId: "AKIASBGQK5ZFBFOCLGG4", // Access Key ID from .env file
+  secretAccessKey: "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", // Secret Access Key from .env file
+  region: "eu-north-1", // AWS region from .env file
+});
 
 const s3 = new AWS.S3({
   params: { Bucket: process.env.AWS_BUCKET_NAME },
@@ -180,7 +180,21 @@ export default function ProductForm() {
         <CardContent className="space-y-4">
           <Input {...register("name")} placeholder="Product Name" />
           <Input {...register("description")} placeholder="Description" />
-          <Input {...register("brand")} placeholder="Brand" />
+          <Controller
+            control={control}
+            name="brand"
+            render={({ field }) => (
+              <Select onValueChange={field.onChange} value={field.value}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Gender" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="men">Men</SelectItem>
+                  <SelectItem value="women">Women</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+          />
           <Input
             {...register("price")}
             placeholder="Price"
