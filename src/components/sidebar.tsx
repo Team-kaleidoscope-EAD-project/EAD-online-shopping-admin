@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { SideNav } from "@/components/side-nav";
 import { NavItems } from "@/constants/side-nav";
 
@@ -8,12 +8,27 @@ import { cn } from "@/lib/utils";
 import { Settings, User } from "lucide-react";
 import Link from "next/link";
 import { NavItem } from "./nav-item";
+import { getUserInfoFromToken } from "@/lib/getUserInformationFromToken";
 
 interface SidebarProps {
   className?: string;
 }
 
 export default function Sidebar({ className }: SidebarProps) {
+  const [userInfo, setUserInfo] = useState<any>(null);
+
+  useEffect(() => {
+    try {
+      const user = getUserInfoFromToken();
+      setUserInfo(user);
+    } catch (error) {
+      console.error("Failed to fetch user info", error);
+    }
+  }, []);
+
+  if (!userInfo) {
+    return <div>Loading...</div>;
+  }
   return (
     <nav
       className={cn(
@@ -44,9 +59,9 @@ export default function Sidebar({ className }: SidebarProps) {
             Settings
           </NavItem> */}
           <hr className="my-1" />
-          <NavItem href="/dashboard/account">
+          <NavItem href="#">
             <User className="h-4 w-4" />
-            Dale Watson
+            {userInfo.username}
           </NavItem>
         </nav>
       </div>
