@@ -21,8 +21,12 @@ export const keycloakAuth = async (email: string, password: string) => {
       })
     );
 
-    const decodedToken = jwt.decode(response.data.access_token) as DecodeToken | null;
-    
+    const decodedToken = jwt.decode(
+      response.data.access_token
+    ) as DecodeToken | null;
+
+    console.log(decodedToken);
+
     if (
       decodedToken?.resource_access?.["react-frontend"]?.roles[1] !==
       "kalei_ADMIN"
