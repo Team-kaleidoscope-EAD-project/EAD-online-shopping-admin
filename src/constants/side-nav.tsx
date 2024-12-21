@@ -1,28 +1,52 @@
-import { Building, Home } from "lucide-react";
+import { Building, Home, ShoppingBasket, Box } from "lucide-react";
+
 import { type NavItem } from "@/types/nav-item";
 
 export const NavItems: NavItem[] = [
+  // {
+  //   title: "Dashboard",
+  //   icon: Home,
+  //   href: "/dashboard",
+  // },
+  // {
+  //   title: "Vendors",
+  //   icon: Building,
+  //   href: "/vendors",
+  //   isChidren: true,
+  //   children: [
+  //     {
+  //       title: "View All Vendors",
+  //       color: "text-red-500",
+  //       href: "/dashboard/vendors",
+  //     },
+  //     {
+  //       title: "Create New Vendor",
+  //       color: "text-red-500",
+  //       href: "/dashboard/vendors/create",
+  //     },
+  //   ],
+  // },
   {
-    title: "Dashboard",
-    icon: Home,
-    href: "/dashboard",
-  },
-  {
-    title: "Vendors",
-    icon: Building,
-    href: "/vendors",
+    title: "Products",
+    icon: ShoppingBasket,
+    href: "/products",
     isChidren: true,
     children: [
       {
-        title: "View All Vendors",
+        title: "View All Products",
         color: "text-red-500",
-        href: "/dashboard/vendors",
+        href: "/dashboard/products",
       },
       {
-        title: "Create New Vendor",
+        title: "Create New Products",
         color: "text-red-500",
-        href: "/dashboard/vendors/create",
+        href: "/dashboard/products/create",
       },
     ],
+  },
+  {
+    title: "Orders",
+    icon: Box,
+    href: "/dashboard/orders",
   },
 ];
